@@ -37,8 +37,8 @@ def main(page: ft.Page):
         page (ft.Page): Fletのページオブジェクト
     """
     page.title = "アプリランチャー"
-    page.window_width = 450
-    page.window_height = 200
+    page.window_width = 650
+    page.window_height = 400
 
     # アプリリストとUI部品の初期化
     apps = load_apps()
@@ -152,7 +152,34 @@ def main(page: ft.Page):
 
     add_button.on_click = add_app
 
-    # タブ切替UI（起動/追加）
+        # テーマ選択ドロップダウン
+    theme_options = [
+        ft.dropdown.Option("system", "システム（自動）"),
+        ft.dropdown.Option("light", "ライト"),
+        ft.dropdown.Option("dark", "ダーク")
+    ]
+    theme_selector = ft.Dropdown(
+        label="テーマ選択",
+        value="system",
+        options=theme_options,
+        width=200
+    )
+
+    def on_theme_change(e):
+        """
+        設定タブのテーマ選択で、page.theme_modeを変更する。
+        """
+        if theme_selector.value == "light":
+            page.theme_mode = ft.ThemeMode.LIGHT
+        elif theme_selector.value == "dark":
+            page.theme_mode = ft.ThemeMode.DARK
+        else:
+            page.theme_mode = ft.ThemeMode.SYSTEM
+        page.update()
+
+    theme_selector.on_change = on_theme_change
+
+    # タブ切替UI（起動/追加/設定）
     tabs = ft.Tabs(
         selected_index=0,
         tabs=[
@@ -164,12 +191,22 @@ def main(page: ft.Page):
                 text="アプリ追加",
                 content=ft.Row([app_name, app_path, file_select_button, add_button]),
             ),
+            ft.Tab(
+                text="設定",
+                content=ft.Column([
+                    ft.Container(
+                        theme_selector,
+                        padding=ft.padding.only(top=40)
+                    )
+                ]),
+            ),
         ],
         expand=True,
     )
 
     page.add(tabs)
     refresh_buttons()
+
 
 # Fletアプリの起動エントリポイント
 ft.app(target=main)
